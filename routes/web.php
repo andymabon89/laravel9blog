@@ -1,6 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use App\Models\Post;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +18,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('posts');
+    $posts = Post::all();
+
+
+    return view('posts', [
+        'posts' => $posts
+    ]);
 });
 
 
-Route::get('posts/{post}', function($slug){
-    if (! file_exists($path = __DIR__ . "/../resources/posts/{$slug}.html")) {
-        return redirect('/');
-    }
-
-
-    $post = cache()->remember("posts.{$slug}", 1500, fn() => file_get_contents($path)); 
-
+Route::get('posts/{post}', function($slug) {
     return view('post', [
-        'post' => $post
+        'post' => Post::find($slug)
     ]);
-})->where('posts', '[A-z_\-]+');
+})->where('post', '[A-z_\-]+');
+
