@@ -56,6 +56,8 @@ class Post
             if (! $post) {
                 throw new ModelNotFoundException();
             }
+
+            return $post;
         }
 
     }
