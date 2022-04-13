@@ -28,15 +28,18 @@ class Post
 
         public static function all()
         {
-            return $posts = collect(File::files(resource_path("posts")))
-                ->map(fn ($file) => \Spatie\YamlFrontMatter\YamlFrontMatter::parseFile($file))
-                ->map(fn ($document) => new Post(
-                    $document->title,
-                    $document->excerpt,
-                    $document->date,
-                    $document->body(),
-                    $document->slug
-                ));
+            return cache()->rememberForever('posts.all', function () {
+                return $posts = collect(File::files(resource_path("posts")))
+                    ->map(fn ($file) => \Spatie\YamlFrontMatter\YamlFrontMatter::parseFile($file))
+                    ->map(fn ($document) => new Post(
+                        $document->title,
+                        $document->excerpt,
+                        $document->date,
+                        $document->body(),
+                        $document->slug
+                    ))
+                    ->sortByDesc('date');
+            });
         }
 
         public static function find($slug)
@@ -44,7 +47,15 @@ class Post
         {
             return static::all()->firstWhere('slug', $slug);
 
+        }
 
+        public static function findOrFail($slug)
+        {
+            $post = static::find($slug);
+
+            if (! $post) {
+                throw new ModelNotFoundException();
+            }
         }
 
     }
